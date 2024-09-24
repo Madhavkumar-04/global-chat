@@ -1,12 +1,12 @@
-import 'dart:async';
-
 import 'package:country_picker/country_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:group_chat/resources/firestore_methods.dart';
+import 'package:group_chat/screens/chat_page.dart';
 import 'package:intl/intl.dart';
 
 import '../models/user.dart';
+import '../utils.dart';
 
 class Details extends StatefulWidget {
   const Details({super.key});
@@ -19,17 +19,18 @@ class _DetailsState extends State<Details> {
   final _formKey = GlobalKey<FormState>();
   String? _gender = 'Male'; // Default gender selection
   String? _selectedCountry;
-  Country? _selectedPhoneCountry= Country.parse('IN');
+  Country? _selectedPhoneCountry = Country.parse('IN');
   String? _selectedState;
   String? _selectedCity;
-  bool _isPasswordVisible = false;// Default country code
+  bool _isPasswordVisible = false; // Default country code
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _postalCodeController = TextEditingController();
-  final TextEditingController _dobController = TextEditingController(); // Date of Birth
+  final TextEditingController _dobController =
+      TextEditingController(); // Date of Birth
   List<String> countries = ['USA', 'India', 'Canada'];
   List<String> states = ['California', 'Texas', 'Ontario'];
   List<String> cities = ['Los Angeles', 'Houston', 'Toronto'];
@@ -54,12 +55,61 @@ class _DetailsState extends State<Details> {
       return 'Please enter your password';
     }
     // Regex: at least one uppercase, one digit, one special character
-    if (!RegExp(r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+=[\]{};":\\|,.<>?]).+$').hasMatch(value)) {
+    if (!RegExp(r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+=[\]{};":\\|,.<>?]).+$')
+        .hasMatch(value)) {
       return 'Password must contain at least one uppercase letter, one number, and one special character.';
     }
     return null;
   }
-  String createAccount(){
+
+  String? fullNameValidator(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your full name';
+    }
+    if (value.length < 3) {
+      return 'Full name must be at least 3 characters';
+    }
+    return null;
+  }
+
+  String? phoneValidator(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your phone number';
+    }
+    if (value.length < 10) {
+      return 'Phone number must be at least 10 digits';
+    }
+    return null;
+  }
+
+  String? emailValidator(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your email';
+    }
+    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+      return 'Please enter a valid email address';
+    }
+    return null;
+  }
+
+  String? addressValidator(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your address';
+    }
+    return null;
+  }
+
+  String? postalCodeValidator(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your postal code';
+    }
+    if (!RegExp(r'^\d{6}$').hasMatch(value)) {
+      return 'Postal code must be 6 digits';
+    }
+    return null;
+  }
+
+  String createAccount() {
     final User? currentUser = FirebaseAuth.instance.currentUser;
     if (_formKey.currentState!.validate()) {
       UserModel newUser = UserModel(
@@ -80,11 +130,17 @@ class _DetailsState extends State<Details> {
       // Do something with the newUser, e.g., print or send to the backend
       FirestoreMethods().createUser(newUser);
       print(newUser.toString());
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChatPage(),
+          ));
     }
     print("success");
     String res = "success";
     return res;
   }
+
   InputDecoration inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
@@ -120,9 +176,9 @@ class _DetailsState extends State<Details> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 10),
-                const Text(
+                Text(
                   "Sign Up",
-                  style: TextStyle(
+                  style: TextStyles.heading.copyWith(
                     fontWeight: FontWeight.bold,
                     fontSize: 35,
                     color: Color(0xFF438E96),
@@ -140,21 +196,26 @@ class _DetailsState extends State<Details> {
                 const SizedBox(height: 40),
 
                 // Full Name
-                const Text("Full Name", style: TextStyle(fontFamily: 'Poppins', color: Color(0xFF438E96))),
+                const Text("Full Name",
+                    style: TextStyle(
+                        fontFamily: 'Poppins', color: Color(0xFF438E96))),
                 TextFormField(
                   decoration: inputDecoration("Enter your full name"),
                   controller: _fullNameController,
+                  validator: fullNameValidator,
                 ),
                 const SizedBox(height: 20),
 
                 // Phone
-                const Text("Phone", style: TextStyle(fontFamily: 'Poppins', color: Color(0xFF438E96))),
+                const Text("Phone",
+                    style: TextStyle(
+                        fontFamily: 'Poppins', color: Color(0xFF438E96))),
                 Row(
                   children: [
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         side: BorderSide.none, // This removes the border
-                        padding: EdgeInsets.zero
+                        padding: EdgeInsets.zero,
                       ),
                       onPressed: () {
                         showCountryPicker(
@@ -171,7 +232,9 @@ class _DetailsState extends State<Details> {
                         _selectedPhoneCountry != null
                             ? '${_selectedPhoneCountry!.flagEmoji} +${_selectedPhoneCountry!.phoneCode}'
                             : 'Select Country',
-                        style: const TextStyle(fontSize: 16), // You can customize the text style here
+                        style: const TextStyle(
+                            fontSize:
+                                16), // You can customize the text style here
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -180,6 +243,7 @@ class _DetailsState extends State<Details> {
                         decoration: inputDecoration("Enter your phone number"),
                         keyboardType: TextInputType.phone,
                         controller: _phoneController,
+                        validator: phoneValidator,
                       ),
                     ),
                   ],
@@ -187,23 +251,31 @@ class _DetailsState extends State<Details> {
                 const SizedBox(height: 20),
 
                 // Email Address
-                const Text("Email Address", style: TextStyle(fontFamily: 'Poppins', color: Color(0xFF438E96))),
+                const Text("Email Address",
+                    style: TextStyle(
+                        fontFamily: 'Poppins', color: Color(0xFF438E96))),
                 TextFormField(
                   decoration: inputDecoration("Enter your email"),
                   keyboardType: TextInputType.emailAddress,
                   controller: _emailController,
-                  enabled: false,
+                  enabled:
+                      false, // Disabled since this is fetched from Firebase
+                  validator: emailValidator,
                 ),
                 const SizedBox(height: 20),
 
                 // Password
-                const Text("Password", style: TextStyle(fontFamily: 'Poppins', color: Color(0xFF438E96))),
+                const Text("Password",
+                    style: TextStyle(
+                        fontFamily: 'Poppins', color: Color(0xFF438E96))),
                 TextFormField(
                   controller: _passwordController,
                   decoration: inputDecoration("Enter your password").copyWith(
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                       ),
                       onPressed: () {
                         setState(() {
@@ -284,113 +356,60 @@ class _DetailsState extends State<Details> {
                 const SizedBox(height: 20),
 
                 // Postal Code
-                const Text("Postal Code", style: TextStyle(fontFamily: 'Poppins', color: Color(0xFF438E96))),
+                const Text("Postal Code",
+                    style: TextStyle(
+                        fontFamily: 'Poppins', color: Color(0xFF438E96))),
                 TextFormField(
-                  controller: _postalCodeController,
                   decoration: inputDecoration("Enter your postal code"),
                   keyboardType: TextInputType.number,
+                  controller: _postalCodeController,
+                  validator: postalCodeValidator,
                 ),
                 const SizedBox(height: 20),
 
                 // Date of Birth
-                const Text("Date of Birth", style: TextStyle(fontFamily: 'Poppins', color: Color(0xFF438E96))),
+                const Text("Date of Birth",
+                    style: TextStyle(
+                        fontFamily: 'Poppins', color: Color(0xFF438E96))),
                 TextFormField(
                   controller: _dobController,
-                  decoration: inputDecoration("Enter your date of birth").copyWith(
-                    suffixIcon: Icon(Icons.calendar_today),
+                  decoration:
+                      inputDecoration("Select your date of birth").copyWith(
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.calendar_today),
+                      onPressed: () async {
+                        DateTime? selectedDate = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime.now(),
+                        );
+
+                        if (selectedDate != null) {
+                          setState(() {
+                            _dobController.text =
+                                DateFormat('yyyy-MM-dd').format(selectedDate);
+                          });
+                        }
+                      },
+                    ),
                   ),
-                  onTap: () async {
-                    // Open date picker
-                    DateTime? pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),  // Current date as default
-                      firstDate: DateTime(1900),  // Earliest possible date
-                      lastDate: DateTime.now(),  // Latest possible date (today)
-                    );
-
-                    if (pickedDate != null) {
-                      String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
-                      setState(() {
-                        _dobController.text = formattedDate; // Update the controller
-                      });
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please select your date of birth';
                     }
+                    return null;
                   },
-                ),
-
-                const SizedBox(height: 20),
-
-                // Gender (Radio Buttons)
-                const Text("Gender", style: TextStyle(fontSize: 16, fontFamily: 'Poppins', color: Color(0xFF438E96))),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Radio<String>(
-                          value: 'Male',
-                          groupValue: _gender,
-                          onChanged: (value) {
-                            setState(() {
-                              _gender = value;
-                            });
-                          },
-                          activeColor: Color(0xFF438E96),
-                        ),
-                        const Text('Male', style: TextStyle(fontFamily: 'Poppins', color: Color(0xFF3A4750))),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Radio<String>(
-                          value: 'Female',
-                          groupValue: _gender,
-                          onChanged: (value) {
-                            setState(() {
-                              _gender = value;
-                            });
-                          },
-                          activeColor: Color(0xFF438E96),
-                        ),
-                        const Text('Female', style: TextStyle(fontFamily: 'Poppins', color: Color(0xFF3A4750))),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Radio<String>(
-                          value: 'Prefer not to say',
-                          groupValue: _gender,
-                          onChanged: (value) {
-                            setState(() {
-                              _gender = value;
-                            });
-                          },
-                          activeColor: Color(0xFF438E96),
-                        ),
-                        const Text('Prefer not to say', style: TextStyle(fontFamily: 'Poppins', color: Color(0xFF3A4750))),
-                      ],
-                    ),
-                  ],
                 ),
                 const SizedBox(height: 20),
 
                 // Submit Button
                 ElevatedButton(
-                  onPressed: createAccount,
-                  child: Container(
-                    width: double.infinity,
-                    height: 40,
-                    child: Center(
-                      child: const Text(
-                        'Create Account',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                          fontFamily: 'Poppins',
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      createAccount();
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF438E96),
                     padding: const EdgeInsets.symmetric(vertical: 15.0),
@@ -399,6 +418,20 @@ class _DetailsState extends State<Details> {
                     ),
                     elevation: 2,
                     shadowColor: const Color(0xFF438E96).withOpacity(0.3),
+                  ),
+                  child: const SizedBox(
+                    width: double.infinity,
+                    height: 40,
+                    child: Center(
+                      child: Text(
+                        'Create Account',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: 'Poppins',
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],

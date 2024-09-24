@@ -9,7 +9,7 @@ class Home extends StatelessWidget {
     final authProvider = Provider.of<AuthProvider>(context);
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage("/flags/image1.png"), // Set your background image
             fit: BoxFit.cover, // Cover the entire container

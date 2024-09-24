@@ -24,10 +24,12 @@ void main() async {
   } else {
     await Firebase.initializeApp();
   }
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -35,16 +37,12 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Global Chat',
-        theme: ThemeData(
-          // Apply the custom Cherry Swash TextTheme globally
-          textTheme: TextStyles.cherrySwashTextTheme,
-        ),
         initialRoute: '/',
         routes: {
-          '/': (context) => AuthChecker(),         // Default route
-          "/details":(context)=>Details(),
-          '/login': (context) => LoginScreen(),     // Login Screen
-          '/chat': (context) => ChatPage(),// Additional screen for user profile, as an example
+          '/': (context) => const AuthChecker(),         // Default route
+          "/details":(context)=>const Details(),
+          '/login': (context) => const LoginScreen(),     // Login Screen
+          '/chat': (context) => const ChatPage(),// Additional screen for user profile, as an example
         },
 
       ),
@@ -53,13 +51,15 @@ class MyApp extends StatelessWidget {
 }
 
 class AuthChecker extends StatelessWidget {
+  const AuthChecker({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         if (authProvider.isAuthenticated) {
           // If authenticated, return Details() or ChatPage based on first-time login status
-          return authProvider.isFirstTimeLogin ? ChatPage(): Details();
+          return authProvider.isFirstTimeLogin ? const ChatPage(): const Details();
         } else {
           // If not authenticated, return the home or login screen
           return const Home(); // Replace with your login page
