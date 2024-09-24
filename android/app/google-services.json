@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "265253015743",
+    "project_id": "global-group-chat",
+    "storage_bucket": "global-group-chat.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:265253015743:android:45cd13d33b5b0ed1def60a",
+        "android_client_info": {
+          "package_name": "com.example.group_chat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBW-HDxZ-zDs7Aj4O79I3D9l8-0fbCPNKo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
