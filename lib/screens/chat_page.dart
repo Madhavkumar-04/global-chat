@@ -8,6 +8,7 @@ import 'package:group_chat/resources/firestore_methods.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../models/chat_message.dart';
+import '../resources/storage_method.dart';
 import '../utils.dart';
 
 class ChatPage extends StatefulWidget {
@@ -21,6 +22,7 @@ class _ChatPageState extends State<ChatPage> {
   final TextEditingController _controller = TextEditingController();
   dynamic userDetail;
   String imageUrl = ""; // To handle image URLs
+  Uint8List? _file;
   bool isLoadingImage = false; // Loading indicator for image upload
   @override
   void initState() {
@@ -38,7 +40,15 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  void _sendMessage() {
+  Future<void> _sendMessage() async {
+    if(_file != null){
+      String photoUrl =
+      await StorageMethod().uploadImage('posts', _file!,);
+      setState(() {
+        imageUrl = photoUrl;
+      });
+    }
+
     if (_controller.text.isNotEmpty || imageUrl.isNotEmpty) {
       ChatMessage chat = ChatMessage(
         uid: DateTime.now().toString(),
@@ -57,37 +67,6 @@ class _ChatPageState extends State<ChatPage> {
       }).catchError((error) {
         print("Failed to send message: $error");
       });
-    }
-  }
-
-  Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-
-    if (image != null) {
-      setState(() {
-        isLoadingImage = true; // Start loading indicator
-      });
-      try {
-        Uint8List imageBytes = await image.readAsBytes(); // Read image as bytes
-        String fileName = DateTime.now().millisecondsSinceEpoch.toString(); // Unique filename
-        Reference ref = FirebaseStorage.instance.ref().child('msg');
-        UploadTask uploadTask = ref.putData(imageBytes);
-
-        TaskSnapshot snapshot = await uploadTask;
-        String downloadUrl = await snapshot.ref.getDownloadURL(); // Get download URL
-
-        setState(() {
-          imageUrl = downloadUrl; // Update imageUrl with the download URL
-        });
-      } catch (error) {
-        print("Failed to upload image: $error");
-        // Show an error message to the user
-      } finally {
-        setState(() {
-          isLoadingImage = false; // Stop loading indicator
-        });
-      }
     }
   }
 
@@ -199,9 +178,11 @@ class _ChatPageState extends State<ChatPage> {
                                   fit: BoxFit.cover,
                                   width: 200, // Adjust width as needed
                                   height: 200,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Text('Error loading image');
+                                  },
                                 ),
                               ),
-// Display the image here
                           ],
                         ),
                       ),
@@ -215,6 +196,7 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ],
       ),
+
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16),
         decoration: const BoxDecoration(
@@ -265,7 +247,12 @@ class _ChatPageState extends State<ChatPage> {
                       ):
                     IconButton(
                       icon: const Icon(Icons.image_outlined),
-                      onPressed: _pickImage,
+                      onPressed: () async {
+                        Uint8List file = await pickImage(ImageSource.gallery);
+                        setState(() {
+                          _file = file;
+                        });
+                      },
                     ),
                   ],
                 ),
