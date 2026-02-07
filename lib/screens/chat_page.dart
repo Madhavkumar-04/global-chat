@@ -87,7 +87,7 @@ class _ChatPageState extends State<ChatPage> {
                     'Group Chat',
                     style: TextStyles.heading.copyWith(
                       fontSize: 45,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w800,
                       color: Colors.white,
                     ),
                   ),
