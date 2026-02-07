@@ -79,7 +79,7 @@ class _ChatPageState extends State<ChatPage> {
             width: double.infinity,
             color: const Color(0xFF438E96),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(15.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -87,7 +87,7 @@ class _ChatPageState extends State<ChatPage> {
                     'Group Chat',
                     style: TextStyles.heading.copyWith(
                       fontSize: 45,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w800,
                       color: Colors.white,
                     ),
                   ),
